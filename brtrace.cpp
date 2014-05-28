@@ -54,7 +54,9 @@ INT32 Usage()
 
 int main(int argc, char * argv[])
 {
+    #ifdef Print2File
     trace = fopen("brtrace.out", "w");
+    #endif
     
     // Initialize pin
     if (PIN_Init(argc, argv)) return Usage();
