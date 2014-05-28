@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# make ensure you set $PIN_ROOT
+if [ -z "$PIN_ROOT" ];
+then
+	echo "please set \$PIN_ROOT"
+	exit 0;
+fi
+
 # check
 if [ -z "$1" ];
 then

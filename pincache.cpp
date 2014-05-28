@@ -2,6 +2,7 @@
  * Glue code for running the AvDark cache simulator in Pin.
  */
 
+// #define Print2File
 
 #include "pin.H"
 
@@ -73,20 +74,26 @@ instruction(INS ins, VOID *not_used)
 static VOID
 fini(INT32 code, VOID *v)
 {
-        std::ofstream out(knob_output.Value().c_str());
         int accesses = avdc->stat_data_read + avdc->stat_data_write;
         int misses = avdc->stat_data_read_miss + avdc->stat_data_write_miss;
-
-        out << "Cache statistics:" << endl;
-        out << "  Writes: " << avdc->stat_data_write << endl;
-        out << "  Write Misses: " << avdc->stat_data_write_miss << endl;
-        out << "  Reads: " << avdc->stat_data_read << endl;
-        out << "  Read Misses: " << avdc->stat_data_read_miss << endl;
-        out << "  Misses: " << misses << endl;
-        out << "  Accesses: " << accesses << endl;
-        out << "  Miss Ratio: " << ((100.0 * misses) / accesses) << "%" << endl;
-
         avdc_delete(avdc);
+
+        std::ofstream fileout(knob_output.Value().c_str());
+
+        #ifdef Print2File
+        std::ostream *out = &fileout;
+        #else
+        std::ostream *out = &cout;
+        #endif
+
+        *out << "Cache statistics:" << endl;
+        *out << "  Writes: " << avdc->stat_data_write << endl;
+        *out << "  Write Misses: " << avdc->stat_data_write_miss << endl;
+        *out << "  Reads: " << avdc->stat_data_read << endl;
+        *out << "  Read Misses: " << avdc->stat_data_read_miss << endl;
+        *out << "  Misses: " << misses << endl;
+        *out << "  Accesses: " << accesses << endl;
+        *out << "  Miss Ratio: " << ((100.0 * misses) / accesses) << "%" << endl;
 }
 
 static int
