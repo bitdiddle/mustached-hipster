@@ -14,9 +14,9 @@ else
 fi
 # run
 if [ "$(uname)" == "Darwin" ]; then
-	$PIN_ROOT/pin -t $folder/brtrace.dylib -- $1
+	$PIN_ROOT/pin -t $folder/pincache.dylib -- $1
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-	$PIN_ROOT/pin -t $folder/brtrace.so -- $1
+	$PIN_ROOT/pin -t $folder/pincache.so -- $1
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-    echo "missing"
+    $PIN_ROOT/pin -t $folder/pincache.dll -- $1
 fi

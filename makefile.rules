@@ -5,19 +5,23 @@
 #
 ##############################################################
 
-
 ##############################################################
 #
 # Test targets
 #
 ##############################################################
 
+
+test0: test0.o cache.o
+test1: test1.o cache.o
+
+
 ###### Place all generic definitions here ######
 
 # This defines tests which run tools of the same name.  This is simply for convenience to avoid
 # defining the test name twice (once in TOOL_ROOTS and again in TEST_ROOTS).
 # Tests defined here should not be defined in TOOL_ROOTS and TEST_ROOTS.
-TEST_TOOL_ROOTS := brtrace
+TEST_TOOL_ROOTS := pincache
 
 # This defines the tests to be run that were not already defined in TEST_TOOL_ROOTS.
 TEST_ROOTS :=
@@ -44,13 +48,13 @@ SA_TOOL_ROOTS :=
 APP_ROOTS :=
 
 # This defines any additional object files that need to be compiled.
-OBJECT_ROOTS :=
+OBJECT_ROOTS := cache
 
 # This defines any additional dlls (shared objects), other than the pintools, that need to be compiled.
 DLL_ROOTS :=
 
 # This defines any static libraries (archives), that need to be built.
-LIB_ROOTS :=
+LIB_ROOTS := cache
 
 
 ##############################################################
@@ -69,6 +73,11 @@ LIB_ROOTS :=
 # Build rules
 #
 ##############################################################
+
+
+# Build the tool as a dll (shared object).
+$(OBJDIR)pincache$(PINTOOL_SUFFIX): $(OBJDIR)pincache$(OBJ_SUFFIX) $(OBJDIR)cache$(OBJ_SUFFIX) cache.h
+	$(LINKER) $(TOOL_LDFLAGS_NOOPT) $(LINK_EXE)$@ $(^:%.h=) $(TOOL_LPATHS) $(TOOL_LIBS)
 
 # This section contains the build rules for all binaries that have special build rules.
 # See makefile.default.rules for the default build rules.
