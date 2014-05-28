@@ -7,11 +7,12 @@ then
 	exit 0;
 fi
 
-# check
+# note -s CACHESIZE might need to be larger
 if [ -z "$1" ];
 then
-	echo "Usage: ./run.sh application"
-	exit 0;
+	parameter=""
+else
+	parameter="-s $1"
 fi
 
 if [ "$(uname -m)" == 'x86_64' ]; then
@@ -21,9 +22,12 @@ else
 fi
 # run
 if [ "$(uname)" == "Darwin" ]; then
-	$PIN_ROOT/pin -t $folder/pincache.dylib -- $1
+	echo $PIN_ROOT/pin -t $folder/pincache.dylib $parameter -- tar zcf data1.tgz data1
+	$PIN_ROOT/pin -t $folder/pincache.dylib $parameter -- tar zcf data1.tgz data1
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-	$PIN_ROOT/pin -t $folder/pincache.so -- $1
+	echo $PIN_ROOT/pin -t $folder/pincache.dylib $parameter -- tar zcf data1.tgz data1
+	$PIN_ROOT/pin -t $folder/pincache.so $parameter -- tar zcf data1.tgz data1
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-    $PIN_ROOT/pin -t $folder/pincache.dll -- $1
+	echo $PIN_ROOT/pin -t $folder/pincache.dylib $parameter -- tar zcf data1.tgz data1
+    $PIN_ROOT/pin -t $folder/pincache.dll $parameter -- tar zcf data1.tgz data1
 fi
