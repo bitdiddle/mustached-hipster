@@ -8,12 +8,13 @@ then
 fi
 
 # note -s CACHESIZE might need to be larger
-if [ -z "$1" ];
-then
-	parameter=""
-else
-	parameter="-s $1"
-fi
+# | option | default | description         |
+# | -s     | 8388608 | Cache size (bytes)  |
+# | -a     | 1       | Cache associativity |
+# | -l     | 64      | Cache line size     |
+
+parameter="${@:1}"
+
 
 if [ "$(uname -m)" == 'x86_64' ]; then
 	folder=obj-intel64
