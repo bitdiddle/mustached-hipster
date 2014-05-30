@@ -12,7 +12,9 @@ typedef uint64_t avdc_pa_t;
 
 typedef unsigned avdc_size_t;
 typedef unsigned avdc_block_size_t;
+typedef unsigned avdc_index_t;
 typedef unsigned avdc_assoc_t;
+typedef char*    avdc_replacement_t;
 typedef avdc_pa_t avdc_tag_t;
 
 /**
@@ -38,6 +40,8 @@ typedef struct {
          * Debug printing enabled?
          */
         int                dbg;
+        long             count;
+        char*      replacement;
         /**
          * Name to print to prepend to debug printouts, may be NULL
          */
@@ -53,7 +57,8 @@ typedef struct {
          * is stored
          */
         avdc_cache_line_t *lines;
-
+        int               *head;
+        //bool              *full;  
         /**
          * Cache parameters. Use avdc_resize() update them.
          *
@@ -97,7 +102,7 @@ typedef struct {
  * @param assoc Cache associativiy
  */
 avdark_cache_t *avdc_new(avdc_size_t size, avdc_block_size_t block_size,
-			 avdc_assoc_t assoc);
+			 avdc_assoc_t assoc,avdc_replacement_t replacement);
 /**
  * Destroy an instance of the cache simulator.
  *

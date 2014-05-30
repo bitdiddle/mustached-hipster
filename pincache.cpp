@@ -24,6 +24,8 @@ KNOB<UINT32> knob_associativity(KNOB_MODE_WRITEONCE, "pintool",
 				"a", "1", "Cache associativity");
 KNOB<UINT32> knob_line_size(KNOB_MODE_WRITEONCE, "pintool",
 			    "l", "64", "Cache line size");
+KNOB<string> knob_replacement_policy(KNOB_MODE_WRITEONCE,"pintool",
+                "replace","LRU","Cache replacement policy");
 
 static avdark_cache_t *avdc = NULL;
 
@@ -118,8 +120,11 @@ int main(int argc, char *argv[])
         avdc_size_t size = knob_size.Value();
         avdc_block_size_t block_size = knob_line_size.Value();
         avdc_assoc_t assoc = knob_associativity.Value();
+        avdc_replacement_t replacement;
+        replacement = (char*)malloc(strlen(knob_replacement_policy.Value().c_str())*sizeof(char));
+        strcpy(replacement,knob_replacement_policy.Value().c_str());
 
-        avdc = avdc_new(size, block_size, assoc);
+        avdc = avdc_new(size, block_size, assoc, replacement);
         if (!avdc) {
                 cerr << "Failed to initialize the AvDark cache simulator." << endl;
                 return -1;

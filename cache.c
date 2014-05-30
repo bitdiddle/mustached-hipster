@@ -10,8 +10,8 @@
 #include <string.h>
 #include <assert.h>
 #include <inttypes.h>
-
-
+#include <time.h>
+ 
 #define AVDC_MALLOC(nelems, type) malloc(nelems * sizeof(type))
 #define AVDC_FREE(p) free(p)
 
@@ -22,6 +22,8 @@
  */
 struct avdc_cache_line {
         avdc_tag_t tag;
+        //avdc_index_t index;
+        long        count;
         int        valid;
 };
 
@@ -97,15 +99,81 @@ avdc_dbg_log(avdark_cache_t *self, const char *msg, ...)
 void
 avdc_access(avdark_cache_t *self, avdc_pa_t pa, avdc_access_type_t type)
 {
+        self->count++;
         /* HINT: You will need to update this function */
         avdc_tag_t tag = tag_from_pa(self, pa);
         int index = index_from_pa(self, pa);
-        int hit;
+        int hit = 0;
 
-        hit = self->lines[index].valid && self->lines[index].tag == tag;
-        if (!hit) {
-                self->lines[index].valid = 1;
-                self->lines[index].tag = tag;
+        if (strcmp(self->replacement,"LRU") == 0)
+        {
+            int i;
+            for (i = 0; i < self->assoc ; i++)
+            {
+                int index_temp = self->assoc * index + i;
+                if (self->lines[index_temp].valid && self->lines[index_temp].tag == tag){
+                    hit = 1;
+                    self->lines[index_temp].count = self->count;
+                    break;
+                }        
+            }
+            
+            long min = self->count;
+            int lru_index;
+            if (!hit) {
+                for (i = 0; i < self->assoc ; i++)
+                {
+                    int index_temp = self->assoc * index + i;
+                    if (self->lines[index_temp].count < min)
+                    {
+                        min = self->lines[index_temp].count;
+                        lru_index = index_temp;    
+                    }
+                }   
+                self->lines[lru_index].valid = 1;
+                self->lines[lru_index].tag = tag;
+                self->lines[lru_index].count = self->count;
+            } 
+        }
+        
+        if (strcmp(self->replacement,"RANDOM") == 0)
+        {
+            int i;
+            for (i = 0; i < self->assoc ; i++)
+            {
+                int index_temp = self->assoc * index + i;
+                if (self->lines[index_temp].valid && self->lines[index_temp].tag == tag){
+                    hit = 1;
+                    break;
+                }        
+            }
+
+            if (!hit)
+            {
+                int random_index = rand() % self->assoc;
+                self->lines[random_index].valid = 1;
+                self->lines[random_index].tag = tag;        
+            }
+        }
+
+        if (strcmp(self->replacement,"FIFO") == 0)
+        {
+            int i;
+            for (i = 0; i < self->assoc ; i++)
+            {
+                int index_temp = self->assoc * index + i;
+                if (self->lines[index_temp].valid && self->lines[index_temp].tag == tag){
+                    hit = 1;
+                    break;
+                }        
+            }
+
+            if (!hit){
+                int fifo_index = self->assoc * index + self->head[index];
+                self->head[index]++;
+                self->lines[fifo_index].valid = 1;
+                self->lines[fifo_index].tag = tag;      
+            }
         }
 
         switch (type) {
@@ -132,9 +200,17 @@ avdc_flush_cache(avdark_cache_t *self)
 {
 	int i;
         /* HINT: You will need to update this function */
-        for (i = 0; i < self->number_of_sets; i++) {
+        for (i = 0; i < self->number_of_sets * self->assoc; i++) 
+        {
                 self->lines[i].valid = 0;
                 self->lines[i].tag = 0;
+                self->lines[i].count = 0;       
+        }
+        srand(time(NULL));
+        for(i = 0; i < self->number_of_sets; i++)
+        {
+            self->head[i] = 0;
+            //self->full[i] = false;
         }
 }
 
@@ -166,16 +242,26 @@ avdc_resize(avdark_cache_t *self,
         self->number_of_sets = (self->size / self->block_size) / self->assoc;
         self->block_size_log2 = log2_int32(self->block_size);
         self->tag_shift = self->block_size_log2 + log2_int32(self->number_of_sets);
-
+        
+        //printf("%d %d %d %d\n",self->assoc,self->number_of_sets,self->block_size_log2,self->tag_shift);  
         /* (Re-)Allocate space for the tags array */
+        
         if (self->lines)
-                AVDC_FREE(self->lines);
+            AVDC_FREE(self->lines);
+        if (self->head)
+            AVDC_FREE(self->head);
+        //if (self->full)
+        //    AVDC_FREE(self->full);
+        
         /* HINT: If you change this, you may have to update
          * avdc_delete() to reflect changes to how thie self->lines
          * array is allocated. */
-        self->lines = AVDC_MALLOC(self->number_of_sets, avdc_cache_line_t);
-
+        self->lines = AVDC_MALLOC(self->number_of_sets * self->assoc, avdc_cache_line_t);
+        self->head = AVDC_MALLOC(self->number_of_sets , int);
+        //self->lines = AVDC_MALLOC(self->number_of_sets , bool);
+       
         /* Flush the cache, this initializes the tag array to a known state */
+         
         avdc_flush_cache(self);
 
         return 1;
@@ -215,7 +301,7 @@ avdc_reset_statistics(avdark_cache_t *self)
 
 avdark_cache_t *
 avdc_new(avdc_size_t size, avdc_block_size_t block_size,
-         avdc_assoc_t assoc)
+         avdc_assoc_t assoc,avdc_replacement_t replacement)
 {
         avdark_cache_t *self;
 
@@ -223,6 +309,9 @@ avdc_new(avdc_size_t size, avdc_block_size_t block_size,
 
         memset(self, 0, sizeof(*self));
         self->dbg = 0;
+        self->count = 0;
+        self->replacement = (char*)malloc(strlen(replacement)*sizeof(char));
+        strcpy(self->replacement,replacement);
 
         if (!avdc_resize(self, size, block_size, assoc)) {
                 AVDC_FREE(self);
