@@ -222,6 +222,7 @@ avdc_new(avdc_size_t size, avdc_block_size_t block_size,
         self = AVDC_MALLOC(1, avdark_cache_t);
 
         memset(self, 0, sizeof(*self));
+        // self->dbg = 1;
         self->dbg = 0;
 
         if (!avdc_resize(self, size, block_size, assoc)) {
