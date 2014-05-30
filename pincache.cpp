@@ -80,9 +80,9 @@ fini(INT32 code, VOID *v)
         int misses = avdc->stat_data_read_miss + avdc->stat_data_write_miss;
         avdc_delete(avdc);
 
-        std::ofstream fileout(knob_output.Value().c_str());
 
         #ifdef Print2File
+        std::ofstream fileout(knob_output.Value().c_str());
         std::ostream *out = &fileout;
         #else
         std::ostream *out = &cout;

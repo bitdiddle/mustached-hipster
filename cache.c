@@ -308,6 +308,7 @@ avdc_new(avdc_size_t size, avdc_block_size_t block_size,
         self = AVDC_MALLOC(1, avdark_cache_t);
 
         memset(self, 0, sizeof(*self));
+        // self->dbg = 1;
         self->dbg = 0;
         self->count = 0;
         self->replacement = (char*)malloc(strlen(replacement)*sizeof(char));
