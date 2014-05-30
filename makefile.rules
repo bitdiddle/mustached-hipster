@@ -14,6 +14,7 @@
 
 test0: test0.o cache.o
 test1: test1.o cache.o
+test2: test2.o cache.o
 
 
 ###### Place all generic definitions here ######
