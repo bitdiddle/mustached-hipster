@@ -2,7 +2,7 @@
  * Glue code for running the AvDark cache simulator in Pin.
  */
 
-// #define Print2File
+#define Print2File
 
 #include "pin.H"
 
@@ -10,6 +10,10 @@
 #include <fstream>
 
 #include <sys/time.h>
+
+// lib
+#include <string.h>
+#include <stdlib.h>
 
 extern "C" {
 #include "cache.h"
@@ -80,12 +84,11 @@ fini(INT32 code, VOID *v)
         int misses = avdc->stat_data_read_miss + avdc->stat_data_write_miss;
         avdc_delete(avdc);
 
-
         #ifdef Print2File
         std::ofstream fileout(knob_output.Value().c_str());
         std::ostream *out = &fileout;
-        #else
-        std::ostream *out = &cout;
+	#else
+        std::ostream *out = &std::cout;
         #endif
 
         *out << "Cache statistics:" << endl;

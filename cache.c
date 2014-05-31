@@ -119,7 +119,7 @@ avdc_access(avdark_cache_t *self, avdc_pa_t pa, avdc_access_type_t type)
             }
             
             long min = self->count;
-            int lru_index;
+            int lru_index = -1;
             if (!hit) {
                 for (i = 0; i < self->assoc ; i++)
                 {
