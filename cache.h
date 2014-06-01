@@ -92,6 +92,7 @@ typedef struct {
         int                stat_data_read;
         int                stat_data_read_miss;
         /** @} */
+        avdc_pa_t			last_victim;
 } avdark_cache_t;
 
 /**
@@ -153,7 +154,7 @@ void avdc_flush_cache(avdark_cache_t *self);
  * @param pa Physical address to access
  * @param type Access type
  */
-void avdc_access(avdark_cache_t *self, avdc_pa_t pa, avdc_access_type_t type);
+int avdc_access(avdark_cache_t *self, avdc_pa_t pa, avdc_access_type_t type);
 
 /**
  * Reset cache statistics
@@ -176,6 +177,15 @@ void avdc_print_info(avdark_cache_t *self);
  * @param self Simulator instance
  */
 void avdc_print_internals(avdark_cache_t *self);
+
+/**
+ * Revoke an address in cache
+ *
+ * @param self Simulator instance
+ * @param pa Physical address to access
+ */
+void avdc_revoke(avdark_cache_t *self, avdc_pa_t pa);
+
 
 #endif
 
