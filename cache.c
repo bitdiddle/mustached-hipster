@@ -22,9 +22,8 @@
  */
 struct avdc_cache_line {
         avdc_tag_t tag;
-        //avdc_index_t index;
-        long        count;
-        int        valid;
+        long count;
+        int valid;
 };
 
 /**
@@ -49,6 +48,15 @@ static inline int
 index_from_pa(avdark_cache_t *self, avdc_pa_t pa)
 {
         return (pa >> self->block_size_log2) & (self->number_of_sets - 1);
+}
+
+/**
+ * Calculate a physical address from cache index and tag
+ */
+static inline avdc_pa_t
+pa_from_tag_and_index(avdark_cache_t *self, avdc_pa_t tag, int index)
+{
+        return (index << self->block_size_log2) | (tag << self->tag_shift);
 }
 
 /**
@@ -96,7 +104,7 @@ avdc_dbg_log(avdark_cache_t *self, const char *msg, ...)
 }
 
 
-void
+int
 avdc_access(avdark_cache_t *self, avdc_pa_t pa, avdc_access_type_t type)
 {
         self->count++;
@@ -129,7 +137,11 @@ avdc_access(avdark_cache_t *self, avdc_pa_t pa, avdc_access_type_t type)
                         min = self->lines[index_temp].count;
                         lru_index = index_temp;    
                     }
-                }   
+                }
+                //report victim
+                self->last_victim = self->lines[lru_index].valid?
+		                	pa_from_tag_and_index(self, self->lines[lru_index].tag, lru_index):
+		                	0;
                 self->lines[lru_index].valid = 1;
                 self->lines[lru_index].tag = tag;
                 self->lines[lru_index].count = self->count;
@@ -150,13 +162,17 @@ avdc_access(avdark_cache_t *self, avdc_pa_t pa, avdc_access_type_t type)
 
             if (!hit)
             {
-                int random_index = rand() % self->assoc;
+                int random_index = self->assoc * index + rand() % self->assoc;
+                //report victim
+                self->last_victim = self->lines[random_index].valid?
+		                	pa_from_tag_and_index(self, self->lines[random_index].tag, random_index):
+		                	0;
                 self->lines[random_index].valid = 1;
                 self->lines[random_index].tag = tag;        
             }
         }
 
-        if (strcmp(self->replacement,"FIFO") == 0)
+        if (strcmp(self->replacement,"ROUNDROBIN") == 0)
         {
             int i;
             for (i = 0; i < self->assoc ; i++)
@@ -169,11 +185,59 @@ avdc_access(avdark_cache_t *self, avdc_pa_t pa, avdc_access_type_t type)
             }
 
             if (!hit){
-                int fifo_index = self->assoc * index + self->head[index];
-                self->head[index]++;
-                self->lines[fifo_index].valid = 1;
-                self->lines[fifo_index].tag = tag;      
+                int rr_index = self->assoc * index + self->head[index];
+                //report victim
+                self->last_victim = self->lines[rr_index].valid?
+		                	pa_from_tag_and_index(self, self->lines[rr_index].tag, rr_index):
+		                	0;
+                self->lines[rr_index].valid = 1;
+                self->lines[rr_index].tag = tag;  
+				self->head[index] = (self->head[index]+1 == self->assoc)?
+									0 :	self->head[index]+1;    
             }
+        }
+
+		if (strcmp(self->replacement,"FIFO") == 0)
+        {
+            int i;
+            for (i = 0; i < self->assoc; i++)
+            {
+                int index_temp = self->assoc * index + i;
+                if (self->lines[index_temp].valid && self->lines[index_temp].tag == tag){
+                    hit = 1;
+                    break;
+                }        
+            }
+
+			int fifo_index = self->assoc * index;
+            if (hit){
+            	//move
+                avdc_tag_t hit_tag = self->lines[fifo_index + i].tag;
+                for (; i < self->assoc-1; i++)
+            	{
+            		self->lines[fifo_index + i].valid = 
+            		self->lines[fifo_index + i+1].valid;
+            		self->lines[fifo_index + i].tag = 
+            		self->lines[fifo_index + i+1].tag;
+            	}
+                self->lines[fifo_index + self->assoc-1].valid = 1;
+                self->lines[fifo_index + self->assoc-1].tag = hit_tag;
+                
+            }else{	//!hit
+	            //report victim
+                self->last_victim = self->lines[fifo_index].valid?
+		                	pa_from_tag_and_index(self, self->lines[fifo_index].tag, fifo_index):
+		                	0;
+            	for (i = 0; i < self->assoc-1; i++)
+            	{
+            		self->lines[fifo_index + i].valid = 
+            		self->lines[fifo_index + i+1].valid;
+            		self->lines[fifo_index + i].tag = 
+            		self->lines[fifo_index + i+1].tag;
+            	}
+                self->lines[fifo_index + self->assoc-1].valid = 1;
+                self->lines[fifo_index + self->assoc-1].tag = tag;
+			}
         }
 
         switch (type) {
@@ -193,6 +257,8 @@ avdc_access(avdark_cache_t *self, avdc_pa_t pa, avdc_access_type_t type)
                         self->stat_data_write_miss += 1;
                 break;
         }
+        
+        return hit;
 }
 
 void
@@ -330,6 +396,22 @@ avdc_delete(avdark_cache_t *self)
 
         AVDC_FREE(self);
 }
+
+void
+avdc_revoke(avdark_cache_t *self, avdc_pa_t pa)
+{
+	avdc_tag_t tag = tag_from_pa(self, pa);
+    int index = index_from_pa(self, pa);
+
+	int i;
+	for (i = 0; i < self->assoc ; i++)
+    {
+        int index_temp = self->assoc * index + i;
+        if (self->lines[index_temp].valid && self->lines[index_temp].tag == tag)
+            self->lines[index_temp].valid = 0;     
+    }
+}
+
 
 /*
  * Local Variables:

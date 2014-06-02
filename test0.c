@@ -64,7 +64,7 @@ main(int argc, char *argv[])
 {
         avdark_cache_t *cache;
 
-        cache = avdc_new(512, 64, 1);
+        cache = avdc_new(512, 64, 1, "LRU");
         assert(cache);
 
         assert(cache->stat_data_write == 0 &&

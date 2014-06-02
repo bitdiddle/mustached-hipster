@@ -73,7 +73,7 @@ main(int argc, char *argv[])
 {
         avdark_cache_t *cache;
 
-        cache = avdc_new(512, 64, 1);
+        cache = avdc_new(512, 64, 1, "LRU");
         assert(cache);
         avdc_print_info(cache);
 
