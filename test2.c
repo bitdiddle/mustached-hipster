@@ -1,12 +1,6 @@
-/* 
-* @Date:   2014-05-29 15:18:20
-* @Last Modified time: 2014-05-29 15:21:14
-* @Description:
-* 
-* Cache simulator test case - full associative
-* create test2 to test a fully-associative 512B cache with 64B blocks. 
-* Be sure to check the replacement policy as well. Be sure to add test2 to your hand-in.
-*/
+/**
+ * Cache simulator test case - Aliasing
+ */
 
 #include "cache.h"
 
@@ -30,7 +24,7 @@
                 abort()
 
 static void
-test_full_assoc(avdark_cache_t *cache, avdc_pa_t alias_offset, avdc_access_type_t type)
+test_aliasing(avdark_cache_t *cache, avdc_pa_t alias_offset, avdc_access_type_t type)
 {
         int i;
         int hits = 0;
@@ -79,47 +73,17 @@ main(int argc, char *argv[])
 {
         avdark_cache_t *cache;
 
-        cache = avdc_new(512, 64, 1, "LRU");
+        printf("\nFully associative, LRU\n");
+
+        cache = avdc_new(512, 64, 8, "LRU");
         assert(cache);
         avdc_print_info(cache);
 
         printf("Aliasing [read]\n");
-        test_full_assoc(cache, 512, AVDC_READ);
+        test_aliasing(cache, 64, AVDC_READ);
         printf("Aliasing [write]\n");
         avdc_flush_cache(cache);
-        test_full_assoc(cache, 512, AVDC_WRITE);
-
-
-        avdc_resize(cache, 512, 128, 1);
-        avdc_print_info(cache);
-
-        printf("Aliasing [read]\n");
-        test_full_assoc(cache, 512, AVDC_READ);
-        printf("Aliasing [write]\n");
-        avdc_flush_cache(cache);
-        test_full_assoc(cache, 512, AVDC_WRITE);
-
-
-        avdc_resize(cache, 256, 64, 1);
-        avdc_print_info(cache);
-
-        printf("Aliasing [read]\n");
-        test_full_assoc(cache, 256, AVDC_READ);
-        printf("Aliasing [write]\n");
-        avdc_flush_cache(cache);
-        test_full_assoc(cache, 256, AVDC_WRITE);
-
-
-        printf("Switching to assoc 2, assuming LRU\n");
-
-        avdc_resize(cache, 512, 64, 2);
-        avdc_print_info(cache);
-
-        printf("Aliasing [read]\n");
-        test_full_assoc(cache, 256, AVDC_READ);
-        printf("Aliasing [write]\n");
-        avdc_flush_cache(cache);
-        test_full_assoc(cache, 256, AVDC_WRITE);
+        test_aliasing(cache, 64, AVDC_WRITE);
 
  
         avdc_delete(cache);
