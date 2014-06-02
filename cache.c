@@ -172,7 +172,7 @@ avdc_access(avdark_cache_t *self, avdc_pa_t pa, avdc_access_type_t type)
         }
     }
 
-    if (strcmp(self->replacement,"ROUNDROBIN") == 0)
+    if (strcmp(self->replacement,"FIFO") == 0)
     {
         int i;
         for (i = 0; i < self->assoc ; i++)
@@ -197,7 +197,7 @@ avdc_access(avdark_cache_t *self, avdc_pa_t pa, avdc_access_type_t type)
         }
     }
 
-    if (strcmp(self->replacement,"FIFO") == 0)
+    if (strcmp(self->replacement,"LRU2") == 0)
     {
         int i;
         for (i = 0; i < self->assoc; i++)

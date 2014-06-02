@@ -283,7 +283,7 @@ main(int argc, char *argv[])
         test_fifo(cache, 64, AVDC_WRITE);
  
         avdc_delete(cache);
-
+/*
         printf("\nROUNDROBIN\n");
 
         cache = avdc_new(512, 64, 8, "ROUNDROBIN");
@@ -297,7 +297,7 @@ main(int argc, char *argv[])
         test_roundrobin(cache, 64, AVDC_WRITE);
  
         avdc_delete(cache);
-
+*/
         printf("%s done.\n", argv[0]);
         return 0;
 }
