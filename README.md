@@ -22,6 +22,7 @@ mustached-hipster
 
 ### Journal
 *	bsdtar & gnutar: tar zcf data1.tgz data1
+*	<pre>
 | -            | gnutar   | bsdtar     |
 | Writes       | 294242   | 431184044  |
 | Write Misses | 18557    | 72480524   |
@@ -30,8 +31,10 @@ mustached-hipster
 | Misses       | 105869   | 205412926  |
 | Accesses     | 816946   | 1324285181 |
 | Miss Ratio   | 12.9591% | 15.5112%   |
-
+</pre>
 *	and time
+*	<pre>
 	real	0m31.516s
 	user	0m30.834s
 	sys	0m0.508s
+</pre>
