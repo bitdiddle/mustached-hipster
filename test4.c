@@ -1,5 +1,5 @@
 /**
- * Cache simulator test case - fully associativity LRU
+ * Cache simulator test case - 2 level cache
  */
 
 #include "cache.h"
