@@ -93,6 +93,7 @@ typedef struct {
         int                stat_data_read_miss;
         /** @} */
         avdc_pa_t			last_victim;
+		int					last_valid;
 } avdark_cache_t;
 
 /**

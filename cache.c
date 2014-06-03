@@ -139,9 +139,8 @@ avdc_access(avdark_cache_t *self, avdc_pa_t pa, avdc_access_type_t type)
                 }
             }
                 //report victim
-            self->last_victim = self->lines[lru_index].valid?
-            pa_from_tag_and_index(self, self->lines[lru_index].tag, lru_index):
-            0;
+            self->last_victim = pa_from_tag_and_index(self, self->lines[lru_index].tag, lru_index);
+			self->last_valid = self->lines[lru_index].valid;
             self->lines[lru_index].valid = 1;
             self->lines[lru_index].tag = tag;
             self->lines[lru_index].count = self->count;
@@ -164,9 +163,8 @@ avdc_access(avdark_cache_t *self, avdc_pa_t pa, avdc_access_type_t type)
         {
             int random_index = self->assoc * index + rand() % self->assoc;
                 //report victim
-            self->last_victim = self->lines[random_index].valid?
-            pa_from_tag_and_index(self, self->lines[random_index].tag, random_index):
-            0;
+            self->last_victim = pa_from_tag_and_index(self, self->lines[random_index].tag, random_index);
+			self->last_valid = self->lines[random_index].valid;
             self->lines[random_index].valid = 1;
             self->lines[random_index].tag = tag;        
         }
@@ -185,18 +183,17 @@ avdc_access(avdark_cache_t *self, avdc_pa_t pa, avdc_access_type_t type)
         }
 
         if (!hit){
-            int rr_index = self->assoc * index + self->head[index];
+            int fifo_index = self->assoc * index + self->head[index];
                 //report victim
-            self->last_victim = self->lines[rr_index].valid?
-            pa_from_tag_and_index(self, self->lines[rr_index].tag, rr_index):
-            0;
-            self->lines[rr_index].valid = 1;
-            self->lines[rr_index].tag = tag;  
+            self->last_victim = pa_from_tag_and_index(self, self->lines[fifo_index].tag, fifo_index);
+			self->last_valid = self->lines[fifo_index].valid;
+            self->lines[fifo_index].valid = 1;
+            self->lines[fifo_index].tag = tag;  
             self->head[index] = (self->head[index]+1 == self->assoc)?
             0 : self->head[index]+1;    
         }
     }
-
+/*
     if (strcmp(self->replacement,"LRU2") == 0)
     {
         int i;
@@ -225,9 +222,8 @@ avdc_access(avdark_cache_t *self, avdc_pa_t pa, avdc_access_type_t type)
           
             }else{  //!hit
                 //report victim
-                self->last_victim = self->lines[fifo_index].valid?
-                pa_from_tag_and_index(self, self->lines[fifo_index].tag, fifo_index):
-                0;
+                self->last_victim = pa_from_tag_and_index(self, self->lines[fifo_index].tag, fifo_index);
+				self->last_valid = self->lines[fifo_index].valid;
                 for (i = 0; i < self->assoc-1; i++)
                 {
                   self->lines[fifo_index + i].valid = 
@@ -239,7 +235,7 @@ avdc_access(avdark_cache_t *self, avdc_pa_t pa, avdc_access_type_t type)
               self->lines[fifo_index + self->assoc-1].tag = tag;
           }
       }
-
+*/
       switch (type) {
         case AVDC_READ: /* Read accesses */
         avdc_dbg_log(self, "read: pa: 0x%.16lx, tag: 0x%.16lx, index: %d, hit: %d\n",

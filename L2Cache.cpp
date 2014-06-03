@@ -73,7 +73,8 @@ public:
 			if(!avdc_access(avdc_L1, (avdc_pa_t)addr, (avdc_access_type_t)access_type)){
 				if(!avdc_access(avdc_L2, (avdc_pa_t)addr, (avdc_access_type_t)access_type)){
                     //make sure inclusive
-					avdc_revoke(avdc_L1, avdc_L2->last_victim);
+                    if(avdc_L2->last_valid)
+						avdc_revoke(avdc_L1, avdc_L2->last_victim);
                     //record miss
 					switch (access_type) {
                         case AVDC_READ: /* Read accesses */
