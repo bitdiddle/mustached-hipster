@@ -15,6 +15,11 @@ mustached-hipster
 *	develop environment
 	*	pin-2.13-65163-clang.5.0-mac
 
+###	Charts
+![FIFO](results-FIFO.png)
+![LRU](results-LRU.png)
+![RANDOM](results-RANDOM.png)
+
 ### Ref
 *	[Pin: Pin 2.13 User Guide](https://software.intel.com/sites/landingpage/pintool/docs/65163/Pin/html/)
 	*	[Pin: Instrumentation arguments](https://software.intel.com/sites/landingpage/pintool/docs/61206/Pin/html/group__INST__ARGS.html)
