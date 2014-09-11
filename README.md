@@ -2,7 +2,7 @@ mustached-hipster
 =================
 
 ###	Intro
-*	experiment with branch prediction and evaluation with Intel Pin
+*	experiment with cache replacement policy, inclusive/exclusive multi-level cache and evaluation with Intel Pin
 
 *	team
 	*	alex (team leader)
